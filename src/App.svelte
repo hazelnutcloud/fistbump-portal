@@ -1,30 +1,204 @@
 <script>
-	export let name;
+	import { ethers } from "ethers";
+	import { fly, fade } from "svelte/transition";
+	import contractABI from "../public/WavePortal.json";
+	import { quintIn } from "svelte/easing";
+
+	const { ethereum } = window;
+	const contractAddress = "0xCc154123859d39047FF13eB7D61CBCCCbDE415a7";
+	let loading = false;
+	let accounts;
+	let count = 0;
+	let errorDisplay;
+	let success;
+
+	async function authorizeWallet() {
+		try {
+			loading = true;
+			accounts = await ethereum.request({
+				method: "eth_requestAccounts",
+			});
+			loading = false;
+		} catch (error) {
+			loading = false;
+			console.log(error);
+			errorDisplay = error.message;
+		}
+	}
+
+	async function fistbump() {
+		try {
+			loading = true;
+			const provider = new ethers.providers.Web3Provider(ethereum);
+			const signer = provider.getSigner();
+			const wavePortalContract = new ethers.Contract(
+				contractAddress,
+				contractABI.abi,
+				signer
+			);
+			const waveTxn = await wavePortalContract.wave();
+			await waveTxn.wait();
+			loading = false;
+			getTotalFistbumps();
+			success = true;
+			setTimeout(() => (success = false), 5000);
+		} catch (error) {
+			loading = false;
+			console.log(error);
+			errorDisplay = error.message;
+		}
+	}
+
+	async function getTotalFistbumps() {
+		try {
+			const provider = new ethers.providers.Web3Provider(ethereum);
+			const wavePortalContract = new ethers.Contract(
+				contractAddress,
+				contractABI.abi,
+				provider
+			);
+			count = await wavePortalContract.getTotalWaves();
+		} catch (error) {
+			console.log(error);
+			return;
+		}
+	}
+
+	getTotalFistbumps();
 </script>
 
-<main>
-	<h1>Hello {name}!</h1>
-	<p>Visit the <a href="https://svelte.dev/tutorial">Svelte tutorial</a> to learn how to build Svelte apps.</p>
-</main>
+<div class="container">
+	<h1>🗿 Greetings.</h1>
+	<h2>
+		I'm Hasan, I used to fly airplanes for a living.<br />Now all I do is code
+		💻.<br />Give me a 👊 if you love to code too.
+	</h2>
+
+	{#if !ethereum}
+		<a href="https://metamask.io" target="_blank"
+			><button>🦊 Get metamask</button></a
+		>
+	{:else if !accounts}
+		{#if loading}
+			<button disabled>⏳ Connecting metamask...</button>
+		{:else}
+			<button on:click={authorizeWallet}>🦊 Connect metamask</button>
+		{/if}
+	{:else if loading}
+		<button disabled
+			>🤜💥🤛 Bumping fists... <span class="loading"
+				><i class="fab fa-ethereum" /></span
+			></button
+		>
+	{:else}
+		<button on:click={fistbump}>👊 Fistbump!</button>
+	{/if}
+
+	{#key count}<p style="margin-bottom: 0;">
+			Total 👊's bumped: <span
+				in:fly={{ y: 20, duration: 800 }}
+				style="display: inline-block">{count}</span
+			>
+		</p>{/key}
+	<p class="refresh" on:click={() => getTotalFistbumps()}>
+		<i class="fas fa-sync-alt" /> refresh
+	</p>
+
+	{#if success}
+		<div out:fade class="success-card">
+			<span
+				class="left success"
+				in:fly={{ x: -50, duration: 1000, easing: quintIn }}>🤜</span
+			><span
+				class="right success"
+				in:fly={{ x: 50, duration: 1000, easing: quintIn }}>🤛</span
+			><br /><span in:fade={{ duration: 1500, easing: quintIn }}
+				>fistbump successful!</span
+			>
+		</div>
+	{/if}
+
+	{#if errorDisplay}
+		<p class="error">
+			<i
+				class="fas fa-times-circle"
+				on:click|preventDefault={() => (errorDisplay = "")}
+				style="cursor: pointer"
+			/>
+			Error: {errorDisplay}
+		</p>
+	{/if}
+</div>
 
 <style>
-	main {
+	button {
+		border-radius: 8px;
+		padding: 0.6em 1em;
+	}
+	h2 {
+		font-weight: 500;
+	}
+	.container {
+		position: relative;
 		text-align: center;
+		width: 100%;
+		max-width: 500px;
+		/* From https://css.glass */
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 16px;
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+		backdrop-filter: blur(3px);
+		-webkit-backdrop-filter: blur(3px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
 		padding: 1em;
-		max-width: 240px;
-		margin: 0 auto;
 	}
-
-	h1 {
-		color: #ff3e00;
-		text-transform: uppercase;
-		font-size: 4em;
-		font-weight: 100;
+	.error {
+		color: red;
+		font-size: 0.7em;
+		opacity: 0.7;
 	}
-
-	@media (min-width: 640px) {
-		main {
-			max-width: none;
+	.refresh {
+		opacity: 0.7;
+		font-size: 0.7em;
+		cursor: pointer;
+	}
+	.success {
+		display: inline-block;
+		color: linear-gradient(
+			to right,
+			orange,
+			yellow,
+			green,
+			cyan,
+			blue,
+			violet
+		);
+		font-size: 3em;
+	}
+	.success-card {
+		border: 1px red solid;
+		padding: 0 1em 1em;
+		/* From https://css.glass */
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 16px;
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+		backdrop-filter: blur(5px);
+		-webkit-backdrop-filter: blur(5px);
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		display: inline-block;
+	}
+	.loading {
+		animation: loading 2s;
+		animation-iteration-count: infinite;
+		/* animation-timing-function:cubic-bezier(0.6, -0.28, 0.735, 0.045); */
+		display: inline-block;
+	}
+	@keyframes loading {
+		50% {
+			transform: rotate(180deg);
+		}
+		100% {
+			transform: rotate(360deg);
 		}
 	}
 </style>
