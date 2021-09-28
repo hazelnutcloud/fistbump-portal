@@ -22,15 +22,6 @@
 <style>
     .success {
         display: inline-block;
-        color: linear-gradient(
-            to right,
-            orange,
-            yellow,
-            green,
-            cyan,
-            blue,
-            violet
-        );
         font-size: 3em;
     }
     .success-card {

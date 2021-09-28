@@ -10,7 +10,7 @@
 	let accounts;
 	let count = 0;
 	let errorDisplay;
-	let success = true;
+	let success = false;
 
 	async function authorizeWallet() {
 		try {
