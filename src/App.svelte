@@ -1,8 +1,8 @@
 <script>
 	import { ethers } from "ethers";
-	import { fly, fade } from "svelte/transition";
+	import { fly, } from "svelte/transition";
 	import contractABI from "../public/WavePortal.json";
-	import { quintIn } from "svelte/easing";
+	import Popup from './Popup.svelte'
 
 	const { ethereum } = window;
 	const contractAddress = "0xCc154123859d39047FF13eB7D61CBCCCbDE415a7";
@@ -10,7 +10,7 @@
 	let accounts;
 	let count = 0;
 	let errorDisplay;
-	let success;
+	let success = true;
 
 	async function authorizeWallet() {
 		try {
@@ -41,7 +41,6 @@
 			loading = false;
 			getTotalFistbumps();
 			success = true;
-			setTimeout(() => (success = false), 5000);
 		} catch (error) {
 			loading = false;
 			console.log(error);
@@ -62,6 +61,10 @@
 			console.log(error);
 			return;
 		}
+	}
+
+	function closePopup() {
+		success = false;
 	}
 
 	getTotalFistbumps();
@@ -104,20 +107,6 @@
 		<i class="fas fa-sync-alt" /> refresh
 	</p>
 
-	{#if success}
-		<div out:fade class="success-card">
-			<span
-				class="left success"
-				in:fly={{ x: -50, duration: 1000, easing: quintIn }}>🤜</span
-			><span
-				class="right success"
-				in:fly={{ x: 50, duration: 1000, easing: quintIn }}>🤛</span
-			><br /><span in:fade={{ duration: 1500, easing: quintIn }}
-				>fistbump successful!</span
-			>
-		</div>
-	{/if}
-
 	{#if errorDisplay}
 		<p class="error">
 			<i
@@ -129,6 +118,9 @@
 		</p>
 	{/if}
 </div>
+{#if success}
+<Popup handleClick={closePopup}/>
+{/if}
 
 <style>
 	button {
@@ -161,31 +153,6 @@
 		opacity: 0.7;
 		font-size: 0.7em;
 		cursor: pointer;
-	}
-	.success {
-		display: inline-block;
-		color: linear-gradient(
-			to right,
-			orange,
-			yellow,
-			green,
-			cyan,
-			blue,
-			violet
-		);
-		font-size: 3em;
-	}
-	.success-card {
-		border: 1px red solid;
-		padding: 0 1em 1em;
-		/* From https://css.glass */
-		background: rgba(255, 255, 255, 0.2);
-		border-radius: 16px;
-		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-		backdrop-filter: blur(5px);
-		-webkit-backdrop-filter: blur(5px);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		display: inline-block;
 	}
 	.loading {
 		animation: loading 2s;
