@@ -1,5 +1,5 @@
 <script>
-	import { BigNumber, ethers } from "ethers";
+	import { ethers } from "ethers";
 	import { fly } from "svelte/transition";
 	import contractABI from "../public/FistbumpPortal.json";
 	import Popup from "./Popup.svelte";
