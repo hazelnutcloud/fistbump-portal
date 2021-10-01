@@ -6,7 +6,7 @@
 	import FistbumpCard from "./FistbumpCard.svelte";
 
 	const { ethereum } = window;
-	const contractAddress = "0x05E8CE6b0b765e5a0fA742A2Dd46475cEeac1245";
+	const contractAddress = "0x987B994eC8A7F1938FB19367473e594400D6f29B";
 	let loading = false;
 	let accounts;
 	let count = null;
