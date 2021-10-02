@@ -4,9 +4,10 @@
 	import contractABI from "../public/FistbumpPortal.json";
 	import Popup from "./Popup.svelte";
 	import FistbumpCard from "./FistbumpCard.svelte";
+	import { onMount } from "svelte";
 
 	const { ethereum } = window;
-	const contractAddress = "0x987B994eC8A7F1938FB19367473e594400D6f29B";
+	const contractAddress = "0x2385da8aB91D5653aC994e7C98Dc76b955178dAd";
 	let loading = false;
 	let accounts;
 	let count = null;
@@ -39,11 +40,9 @@
 				contractABI.abi,
 				signer
 			);
-			const fistbumpTxn = await fistbumpPortalContract.fistbump(message);
+			const fistbumpTxn = await fistbumpPortalContract.fistbump(message, { gasLimit: 300000 });
 			await fistbumpTxn.wait();
 			loading = false;
-			getTotalFistbumps();
-			getAllFistbumps();
 			success = true;
 		} catch (error) {
 			loading = false;
@@ -93,6 +92,20 @@
 	}
 
 	refresh();
+
+	onMount(() => {
+		const provider = new ethers.providers.Web3Provider(ethereum);
+		const fistbumpPortalContract = new ethers.Contract(
+			contractAddress,
+			contractABI.abi,
+			provider
+		);
+		fistbumpPortalContract.on('NewFistbump', () => refresh());
+		console.log(fistbumpPortalContract.listeners('NewFistbump'))
+		return () => {
+			fistbumpPortalContract.removeAllListeners();
+		}
+	})
 </script>
 
 <div class="container">
@@ -121,6 +134,7 @@
 		/> <br />
 		{#if !loading}
 			<button on:click={fistbump}>👊 Fistbump!</button>
+			<p class="hint">psst! there's a ~42% chance you'll win some eth every time you give me a fistbump! 😁</p>
 		{:else}
 			<button disabled
 				>🤜💥🤛 Bumping fists... <span class="loading"
@@ -190,6 +204,7 @@
 		-webkit-backdrop-filter: blur(3px);
 		border: 1px solid rgba(255, 255, 255, 0.3);
 		padding: 2em;
+		box-sizing: border-box;
 	}
 	input {
 		width: 100%;
@@ -232,6 +247,10 @@
 		-ms-user-select: none; /* Internet Explorer/Edge */
 		user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Edge, Opera and Firefox */
+	}
+	.hint {
+		opacity: 70%;
+		font-size: 0.7em;
 	}
 	@keyframes loading {
 		50% {
